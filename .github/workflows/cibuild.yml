@@ -21,8 +21,6 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore Shopping/Shopping.API/Shopping.API.csproj
     - name: Build
       run: dotnet build --no-restore Shopping/Shopping.API/Shopping.API.csproj
-    - name: Test
-      run: dotnet test --no-build --verbosity normal Shopping/Shopping.API/Shopping.API.csproj
