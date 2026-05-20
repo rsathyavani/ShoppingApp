@@ -68,6 +68,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v7.1.0
         with:
-          context: ./Shopping/Shopping.API
+          context: ./Shopping
+          file: Shopping.API/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/shoppingapi:${{ github.run_number }}
