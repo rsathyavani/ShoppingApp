@@ -1,4 +1,4 @@
-name: .NET
+name: Shopping API CI Build
 
 on:
   workflow_dispatch:
