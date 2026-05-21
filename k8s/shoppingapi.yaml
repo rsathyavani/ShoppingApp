@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: shoppingapi
-          image: rsathyavani/shoppingapi:3
+          image: mehmetozkaya/shoppingapi:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
