@@ -1,0 +1,74 @@
+name: Shopping Client CI Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install SonarScanner
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+
+      - name: Add .NET tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Restore dependencies
+        run: dotnet restore Shopping/Shopping.Client/Shopping.Client.csproj
+
+      - name: Begin SonarQube Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:"rsathyavani_ShoppingApp" \
+            /o:"rsathyavani" \
+            /d:sonar.host.url="$SONAR_HOST_URL" \
+            /d:sonar.login="$SONAR_TOKEN"
+            
+      - name: Build
+        run: |
+          dotnet build Shopping/Shopping.Client/Shopping.Client.csproj \
+            --no-restore \
+            --configuration Release
+
+      - name: End SonarQube Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner end \
+            /d:sonar.login="$SONAR_TOKEN"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4.1.0
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v7.1.0
+        with:
+          context: ./Shopping
+          file: Shopping/Shopping.Client/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/shoppingclient:${{ github.run_number }}
